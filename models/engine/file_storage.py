@@ -15,7 +15,7 @@ from models.amenity import Amenity
 from models.place import Place
 
 
-class FileStorage():
+class FileStorage:
     """
     serializes instances to a JSON file and
     deserializes JSON file to instances
