@@ -4,7 +4,7 @@ from models.base_model import BaseModel
 from models import storage
 
 class HBNBCommand(cmd.Cmd):
-    """console program"""
+    """c  onsole program"""
 
     prompt = "(hbnb) "
 
