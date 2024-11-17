@@ -3,6 +3,9 @@ import cmd
 
 class HBNBCommand(cmd.Cmd):
     """console program"""
+
+    prompt = "(hbnb) "
+
     def do_EOF(self, line):
         return True
 
