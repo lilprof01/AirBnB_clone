@@ -18,7 +18,7 @@ from models.review import Review
 classes = storage.models
 
 
-class HBNBCommand(Cmd):
+class HBNBCommand(cmd.Cmd):
     """ does various HBNB commands """
     prompt = "(hbnb) "
 
