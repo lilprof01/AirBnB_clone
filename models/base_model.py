@@ -8,7 +8,12 @@ import models
 class BaseModel:
     """a class that defines all common attributes/methods for other classes"""
     def __init__(self, *args, **kwargs):
-        """a constructor to initialize this class"""
+        """a constructor to initialize this class
+
+        Args:
+            args: input
+            kwargs: input
+        """
         if len(kwargs) > 0:
             for key, value in kwargs.items():
                 if key == '__class__':
