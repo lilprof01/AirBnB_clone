@@ -1,79 +1,171 @@
 #!/usr/bin/python3
-import cmd
-from models.base_model import BaseModel
+""" Defines the console class
+"""
+
+
+from cmd import Cmd
 from models import storage
+from models.engine.errors import *
+import shlex
+from models.base_model import BaseModel
+from models.user import User
+from models.state import State
+from models.city import City
+from models.amenity import Amenity
+from models.place import Place
+from models.review import Review
 
-class HBNBCommand(cmd.Cmd):
-    """c  onsole program"""
+classes = storage.models
 
+
+class HBNBCommand(Cmd):
+    """ does various HBNB commands """
     prompt = "(hbnb) "
 
-    def do_EOF(self, line):
+    # Commands
+    def do_EOF(self, args):
+        """Exits the programme in non-interactive mode"""
         return True
 
-    def do_create(self, line):
-        """Creates an instance.
-        """
-        if line == "" or line is None:
+    def do_quit(self, args):
+        """Quits commands that closes the programme"""
+        return True
+
+    def emptyline(self):
+        """Overides empty line to do nothing """
+        pass
+
+    def do_create(self, args):
+        """creates a new instance of a model name"""
+        args, n = parse(args)
+
+        if not n:
             print("** class name missing **")
-        elif line not in storage.classes():
+        elif args[0] not in classes:
             print("** class doesn't exist **")
+        elif n == 1:
+            # temp = classes[args[0]]()
+            temp = eval(args[0])()
+            print(temp.id)
+            temp.save()
         else:
-            b = storage.classes()[line]()
-            b.save()
-            print(b.id)
+            print("** Too many argument for create **")
+            pass
 
-    def do_show(self, line):
-        """Prints the string representation of an instance.
-        """
-        if line == "" or line is None:
+    def do_show(self, arg):
+        """Show an Instance of Model base on its ModelName and id"""
+        args, n = parse(arg)
+
+        if not n:
             print("** class name missing **")
-        else:
-            words = line.split(' ')
-            if words[0] not in storage.classes():
+        elif n == 1:
+            print("** instance id missing **")
+        elif n == 2:
+            try:
+                inst = storage.find_by_id(*args)
+                print(inst)
+            except ModelNotFoundError:
                 print("** class doesn't exist **")
-            elif len(words) < 2:
-                print("** instance id missing **")
-            else:
-                key = "{}.{}".format(words[0], words[1])
-                if key not in storage.all():
-                    print("** no instance found **")
-                else:
-                    print(storage.all()[key])
+            except InstanceNotFoundError:
+                print("** no instance found **")
+        else:
+            print("** Too many argument for show **")
+            pass
 
-    def do_destroy(self, line):
-        """Deletes an instance based on the class name and id.
-        """
-        if line == "" or line is None:
+    def do_destroy(self, arg):
+        """Deletes an Instance of Model base on its ModelName and id."""
+        args, n = parse(arg)
+
+        if not n:
             print("** class name missing **")
-        else:
-            words = line.split(' ')
-            if words[0] not in storage.classes():
+        elif n == 1:
+            print("** instance id missing **")
+        elif n == 2:
+            try:
+                storage.delete_by_id(*args)
+            except ModelNotFoundError:
                 print("** class doesn't exist **")
-            elif len(words) < 2:
-                print("** instance id missing **")
-            else:
-                key = "{}.{}".format(words[0], words[1])
-                if key not in storage.all():
-                    print("** no instance found **")
-                else:
-                    del storage.all()[key]
-                    storage.save()
+            except InstanceNotFoundError:
+                print("** no instance found **")
+        else:
+            print("** Too many argument for destroy **")
+            pass
 
-    def do_all(self, line):
-        """Prints all string representation of all instances.
+    def do_all(self, args):
+        """Usage: all or all <class> or <class>.all()"""
+        args, n = parse(args)
+
+        if n < 2:
+            try:
+                print(storage.find_all(*args))
+            except ModelNotFoundError:
+                print("** class doesn't exist **")
+        else:
+            print("** Too many argument for all **")
+            pass
+
+    def do_update(self, arg):
+        """Updates an instance base on its id"""
+        args, n = parse(arg)
+        if not n:
+            print("** class name missing **")
+        elif n == 1:
+            print("** instance id missing **")
+        elif n == 2:
+            print("** attribute name missing **")
+        elif n == 3:
+            print("** value missing **")
+        else:
+            try:
+                storage.update_one(*args[0:4])
+            except ModelNotFoundError:
+                print("** class doesn't exist **")
+            except InstanceNotFoundError:
+                print("** no instance found **")
+
+    def default(self, arg):
+        """Override default method to handle class methods"""
+        if '.' in arg and arg[-1] == ')':
+            if arg.split('.')[0] not in classes:
+                print("** class doesn't exist **")
+                return
+            return self.handle_class_methods(arg)
+        return Cmd.default(self, arg)
+
+    def do_models(self, arg):
+        """Print all registered Models"""
+        print(*classes)
+
+    def handle_class_methods(self, arg):
+        """Handle Class Methods
         """
-        if line != "":
-            words = line.split(' ')
-            if words[0] not in storage.classes():
-                print("** class doesn't exist **")
-            else:
-                l = [str(obj) for key, obj in storage.all().items()
-                     if type(obj).__name__ == words[0]]
-                print(l)
-        else:
-            l = [str(obj) for key, obj in storage.all().items()]
-            print(l)
 
-if __name__ == '__main__':
+        printable = ("all(", "show(", "count(", "create(")
+        try:
+            val = eval(arg)
+            for x in printable:
+                if x in arg:
+                    print(val)
+                    break
+            return
+        except AttributeError:
+            print("** invalid method **")
+        except InstanceNotFoundError:
+            print("** no instance found **")
+        except TypeError as te:
+            field = te.args[0].split()[-1].replace("_", " ")
+            field = field.strip("'")
+            print(f"** {field} missing **")
+        except Exception as e:
+            print("** invalid syntax **")
+            pass
+
+
+def parse(line: str):
+    """Splits lines by spaces"""
+    args = shlex.split(line)
+    return args, len(args)
+
+
+if __name__ == "__main__":
     HBNBCommand().cmdloop()
