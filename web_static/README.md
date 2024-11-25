@@ -1,0 +1,1 @@
+This directory contains all tasks for Airbnb clone - Web static (Html and css)
