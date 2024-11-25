@@ -28,10 +28,20 @@ button:hover {
   width: 25%;
   border-right: 1px solid #DDDDDD;
 }
+
+.locations:hover .popover{
+  display: block;
+}
+
 .amenities {
   height: 100%;
   width: 25%;
 }
+
+.amenities:hover .popover{
+  display: block;
+}
+
 h3{
   font-weight: 600;
 }
