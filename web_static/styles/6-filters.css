@@ -24,6 +24,7 @@ button {
 button:hover {
   opacity: 90%;
 }
+
 .locations{
   height: 100%;
   width: 25%;
@@ -56,6 +57,7 @@ h4{
   border: 1px solid #DDDDDD;
   border-radius: 4px;
   display: none;
+  z-index: 1;
 }
 
 ul{
