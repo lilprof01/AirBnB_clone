@@ -1,3 +1,9 @@
+.logo{
+  background-image: url(../images/logo1.png);
+  height: 50px;
+  width: 50px;
+}
+
 .places {
   width: 100%;
   border: 0;
